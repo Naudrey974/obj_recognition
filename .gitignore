@@ -1,5 +1,4 @@
 # Données (volumineuses, régénérables via extraire_frames.py)
-videos/*.mp4
 dataset/*/*.jpg
 dataset/*/*.png
 

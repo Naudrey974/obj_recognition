@@ -1,3 +1,7 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Masque les warnings et infos de TensorFlow
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # Désactive le message oneDNN spécifié dans votre terminal
+
 import tensorflow as tf
 import cv2
 import numpy as np

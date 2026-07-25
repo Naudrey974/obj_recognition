@@ -13,7 +13,7 @@ Classifieur 5 classes (softmax) capable de distinguer en temps réel via webcam 
 
 Les classes `fond` et `autres` sont nécessaires car softmax force la somme des probabilités à 100 % : sans elles, le modèle serait obligé d'attribuer une des 3 classes cibles même en leur absence.
 
-**Décision (2026-07-25)** : séparer `fond` et `autres` en deux classes distinctes plutôt qu'un unique catch-all, pour une distinction plus fine (absence d'objet vs présence d'un objet non-cible). Frontière retenue : "y a-t-il un objet net et reconnaissable dans le cadre ?" → oui = `autres`, non = `fond`. Voir `videos/README.md` pour le détail et les cas limites à éviter.
+**Décision (2026-07-25)** : séparer `fond` et `autres` en deux classes distinctes plutôt qu'un unique catch-all, pour une distinction plus fine (absence d'objet vs présence d'un objet non-cible). Frontière retenue : "y a-t-il un objet net et reconnaissable dans le cadre ?" → oui = `autres` (stylo, bouteille, clés, tasse, une autre balle de couleur différente…), non = `fond` (décor vide, main/visage seuls sans rien tenir). Cas limite à éviter : une main qui *tient* un objet est plus proche de `autres` que de `fond`.
 
 ## Étapes réalisées
 
@@ -27,9 +27,7 @@ Les classes `fond` et `autres` sont nécessaires car softmax force la somme des 
 ### 2. Structure du projet
 ```
 obj_recognition/
-├── videos/            # vidéos sources filmées par l'utilisateur (une par classe)
-│   └── README.md      # protocole de tournage
-├── dataset/            # images extraites, une sous-classe par dossier
+├── dataset/            # images capturées, une sous-classe par dossier
 │   ├── deodorant/
 │   ├── mosaique/
 │   ├── balle/
@@ -41,23 +39,33 @@ obj_recognition/
 ├── SETUP.md              # procédure d'installation de l'environnement
 ├── PROCESS.md            # ce fichier — journal de bord
 ├── test_install.py       # vérification TF / OpenCV / webcam
-└── extraire_frames.py    # extraction d'images depuis les vidéos
+└── extraire_frames.py    # capture d'images par classe depuis la webcam
 ```
 
 ### 3. Choix des objets
 - **déodorant** (cylindre allongé), **mosaïque carrée** (plat, carré), **balle bleue** (sphère) : formes et couleurs bien distinctes, objets rigides.
 - Points de vigilance identifiés : taille de la mosaïque (filmer d'assez près), reflets sur surfaces brillantes (capuchon du déodorant, mosaïque vernie).
 
-### 4. Script d'extraction de frames
-- `extraire_frames.py` : lit chaque vidéo de `videos/*.mp4`, garde 1 frame sur 8 (~150 images pour une vidéo de 30-40s à 30 fps), sauvegarde dans `dataset/<classe>/`.
-- Le nom du fichier vidéo (sans extension) = nom de la classe → aucune configuration supplémentaire nécessaire.
+### 4. Constitution du dataset — capture webcam directe
+
+**Décision (2026-07-25)** : abandon de l'approche "filmer une vidéo puis extraire des frames" au profit d'une **capture directe à la webcam**, classe par classe. Raisons :
+- Un pas de moins dans le pipeline (pas de fichier `.mp4` intermédiaire à filmer/déplacer).
+- Feedback visuel immédiat (aperçu live + overlay du compteur pendant la capture).
+- Les images d'entraînement viennent de la **même caméra** que celle utilisée en démo/inférence finale (`webcam.py`) → pas de décalage qualité/couleur/objectif entre train et prod, contrairement à un tournage fait avec un autre appareil (téléphone, etc.).
+
+`extraire_frames.py` a été réécrit en conséquence :
+- Ouvre `cv2.VideoCapture(0)`, sauvegarde 1 frame sur `INTERVALLE` (5) dans `dataset/<NOM_CLASSE>/`, jusqu'à atteindre `OBJECTIF` (150) images.
+- `ESPACE` = pause/reprise (pour se repositionner, changer de fond, sans gaspiller de frames), `q` = quitter avant la fin.
+- Reprend le comptage là où il s'était arrêté si on relance sur une classe déjà partiellement capturée (compte les `.jpg` déjà présents).
+- **On relance le script une fois par classe**, en changeant `NOM_CLASSE` en haut du fichier avant chaque run : `deodorant`, `mosaique`, `balle`, `fond`, `autres`.
+
+Le protocole de variabilité du tuto reste valable, juste appliqué en direct pendant la capture au lieu d'être filmé à l'avance : tourner l'objet à 360°, le rapprocher/éloigner, changer de fond (bureau/sol/mur) via une pause, varier l'éclairage (lumière du jour + artificielle), le cacher partiellement avec la main. Toujours attention au **biais de dataset** (shortcut learning) : ne pas garder le même arrière-plan pour toute une classe.
 
 ## Prochaines étapes
 
-1. **Tournage** (utilisateur) : filmer `deodorant.mp4`, `mosaique.mp4`, `balle.mp4`, `fond.mp4`, `autres.mp4` selon le protocole dans `videos/README.md`, les placer dans `videos/`.
-2. Lancer `python extraire_frames.py` pour peupler `dataset/`.
-3. `explorer_dataset.py` : visualiser des échantillons, vérifier l'équilibre des classes.
-4. `train.py` : construire et entraîner le modèle (Keras `image_dataset_from_directory`, suivi TensorBoard).
-5. `finetune.py` : affiner le modèle.
-6. `evaluer.py` : matrice de confusion / rapport de classification (scikit-learn).
-7. `webcam.py` : démo d'inférence en temps réel.
+1. **Capture** (utilisateur) : lancer `python extraire_frames.py` une fois par classe (`deodorant`, `mosaique`, `balle`, `fond`, `autres`), en variant angle/distance/fond/éclairage pendant la capture.
+2. `explorer_dataset.py` : visualiser des échantillons, vérifier l'équilibre des classes.
+3. `train.py` : construire et entraîner le modèle (Keras `image_dataset_from_directory`, suivi TensorBoard).
+4. `finetune.py` : affiner le modèle.
+5. `evaluer.py` : matrice de confusion / rapport de classification (scikit-learn).
+6. `webcam.py` : démo d'inférence en temps réel.
