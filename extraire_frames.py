@@ -16,9 +16,13 @@ import cv2
 NOM_CLASSE = "deodorant"   # ← À CHANGER : deodorant, mosaique, balle, fond, autres
 OBJECTIF   = 150           # nombre d'images visé pour cette classe
 INTERVALLE = 5             # on sauvegarde 1 frame sur 5 (évite les quasi-doublons)
+PAUSE_TOUS_LES = 30        # pause automatique toutes les N images (changer fond/éclairage)
 
 # 1. Créer le dossier de destination (le nom = le nom de la classe)
-dossier = os.path.join("dataset", NOM_CLASSE)
+# Ancré à l'emplacement du script pour toujours écrire dans obj_recognition/dataset,
+# peu importe le dossier de travail depuis lequel le script est lancé.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+dossier = os.path.join(BASE_DIR, "dataset", NOM_CLASSE)
 os.makedirs(dossier, exist_ok=True)
 
 # On repart du nombre d'images déjà présentes (pour compléter une classe)
@@ -34,7 +38,11 @@ if not cap.isOpened():
 numero_frame = 0
 en_pause = False
 
+# Prochain palier d'images auquel on se met en pause automatiquement
+prochain_seuil_pause = ((deja_present // PAUSE_TOUS_LES) + 1) * PAUSE_TOUS_LES
+
 print("Capture en cours. ESPACE = pause/reprise, q = quitter.")
+print(f"Pause automatique toutes les {PAUSE_TOUS_LES} images pour repositionner/changer fond/éclairage.")
 
 while compteur_images < OBJECTIF:
     succes, frame = cap.read()
@@ -46,6 +54,12 @@ while compteur_images < OBJECTIF:
         chemin = os.path.join(dossier, f"{NOM_CLASSE}_{compteur_images:04d}.jpg")
         cv2.imwrite(chemin, frame)
         compteur_images += 1
+
+        # --- Pause automatique tous les PAUSE_TOUS_LES images ---
+        if compteur_images >= prochain_seuil_pause and compteur_images < OBJECTIF:
+            en_pause = True
+            prochain_seuil_pause += PAUSE_TOUS_LES
+            print(f"⏸  Pause auto à {compteur_images}/{OBJECTIF} — change le fond/l'éclairage puis appuie sur ESPACE pour reprendre.")
 
     numero_frame += 1
 
