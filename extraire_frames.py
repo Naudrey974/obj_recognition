@@ -13,10 +13,10 @@ import cv2
 #   q      = quitter avant la fin
 # ============================================================
 
-NOM_CLASSE = "deodorant"   # ← À CHANGER : deodorant, mosaique, balle, fond, autres
+NOM_CLASSE = "autres"   # ← À CHANGER : licorne, mosaique, camion, fond, autres
 OBJECTIF   = 150           # nombre d'images visé pour cette classe
-INTERVALLE = 5             # on sauvegarde 1 frame sur 5 (évite les quasi-doublons)
-PAUSE_TOUS_LES = 30        # pause automatique toutes les N images (changer fond/éclairage)
+INTERVALLE = 10             # on sauvegarde 1 frame sur 5 (évite les quasi-doublons)
+PAUSE_TOUS_LES = 15        # pause automatique toutes les N images (changer fond/éclairage)
 
 # 1. Créer le dossier de destination (le nom = le nom de la classe)
 # Ancré à l'emplacement du script pour toujours écrire dans obj_recognition/dataset,

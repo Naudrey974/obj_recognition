@@ -5,9 +5,9 @@ Projet de soutenance deep learning : reconnaissance de 3 objets + 1 classe "fond
 ## Objectif
 
 Classifieur 5 classes (softmax) capable de distinguer en temps réel via webcam :
-1. `deodorant`
+1. `licorne`
 2. `mosaique`
-3. `balle`
+3. `camion`
 4. `fond` — aucun objet distinct dans le cadre (décor vide, main/visage seuls)
 5. `autres` — un objet distinct présent mais différent des 3 cibles (stylo, bouteille, clés, tasse…)
 
@@ -28,9 +28,9 @@ Les classes `fond` et `autres` sont nécessaires car softmax force la somme des 
 ```
 obj_recognition/
 ├── dataset/            # images capturées, une sous-classe par dossier
-│   ├── deodorant/
+│   ├── licorne/
 │   ├── mosaique/
-│   ├── balle/
+│   ├── camion/
 │   ├── fond/
 │   └── autres/
 ├── models/              # modèles entraînés sauvegardés
@@ -43,8 +43,9 @@ obj_recognition/
 ```
 
 ### 3. Choix des objets
-- **déodorant** (cylindre allongé), **mosaïque carrée** (plat, carré), **balle bleue** (sphère) : formes et couleurs bien distinctes, objets rigides.
-- Points de vigilance identifiés : taille de la mosaïque (filmer d'assez près), reflets sur surfaces brillantes (capuchon du déodorant, mosaïque vernie).
+- Choix initial : **déodorant** (cylindre allongé), **mosaïque carrée** (plat, carré), **balle bleue** (sphère) : formes et couleurs bien distinctes, objets rigides.
+- **Révision (2026-07-25)** : `deodorant` → **licorne** (jouet, plus facile à travailler pour les images) ; `balle` → **camion** (jouet). `mosaique` conservée. Les 150 premières images capturées pour `deodorant` ont été écrasées par erreur par une capture de la licorne (le compteur de reprise n'avait pas encore la logique anti-écrasement actuelle) ; le dossier a simplement été renommé `licorne/` puisque le contenu correspondait déjà au nouvel objet choisi.
+- Points de vigilance à surveiller pour la suite : taille de la mosaïque (filmer d'assez près), reflets sur surfaces brillantes (plastique verni des jouets licorne/camion).
 
 ### 4. Constitution du dataset — capture webcam directe
 
@@ -57,13 +58,13 @@ obj_recognition/
 - Ouvre `cv2.VideoCapture(0)`, sauvegarde 1 frame sur `INTERVALLE` (5) dans `dataset/<NOM_CLASSE>/`, jusqu'à atteindre `OBJECTIF` (150) images.
 - `ESPACE` = pause/reprise (pour se repositionner, changer de fond, sans gaspiller de frames), `q` = quitter avant la fin.
 - Reprend le comptage là où il s'était arrêté si on relance sur une classe déjà partiellement capturée (compte les `.jpg` déjà présents).
-- **On relance le script une fois par classe**, en changeant `NOM_CLASSE` en haut du fichier avant chaque run : `deodorant`, `mosaique`, `balle`, `fond`, `autres`.
+- **On relance le script une fois par classe**, en changeant `NOM_CLASSE` en haut du fichier avant chaque run : `licorne`, `mosaique`, `camion`, `fond`, `autres`. ⚠️ Bien vérifier `NOM_CLASSE` avant chaque lancement — c'est cet oubli qui a causé l'écrasement du dataset `deodorant` (voir section 3).
 
 Le protocole de variabilité du tuto reste valable, juste appliqué en direct pendant la capture au lieu d'être filmé à l'avance : tourner l'objet à 360°, le rapprocher/éloigner, changer de fond (bureau/sol/mur) via une pause, varier l'éclairage (lumière du jour + artificielle), le cacher partiellement avec la main. Toujours attention au **biais de dataset** (shortcut learning) : ne pas garder le même arrière-plan pour toute une classe.
 
 ## Prochaines étapes
 
-1. **Capture** (utilisateur) : lancer `python extraire_frames.py` une fois par classe (`deodorant`, `mosaique`, `balle`, `fond`, `autres`), en variant angle/distance/fond/éclairage pendant la capture.
+1. **Capture** (utilisateur) : lancer `python extraire_frames.py` une fois par classe (`licorne` ✅ fait, `mosaique`, `camion`, `fond`, `autres`), en variant angle/distance/fond/éclairage pendant la capture.
 2. `explorer_dataset.py` : visualiser des échantillons, vérifier l'équilibre des classes.
 3. `train.py` : construire et entraîner le modèle (Keras `image_dataset_from_directory`, suivi TensorBoard).
 4. `finetune.py` : affiner le modèle.
