@@ -30,6 +30,19 @@ deja_present = len([f for f in os.listdir(dossier) if f.endswith(".jpg")])
 compteur_images = deja_present
 print(f"{deja_present} image(s) déjà dans '{NOM_CLASSE}'. Objectif : {OBJECTIF}.")
 
+
+def prochain_indice_libre(depart):
+    """Renvoie le premier indice de fichier non utilisé à partir de `depart`.
+    Évite d'écraser une image existante si des captures ont été supprimées
+    au milieu de la séquence (ex: photos floues retirées manuellement)."""
+    i = depart
+    while os.path.exists(os.path.join(dossier, f"{NOM_CLASSE}_{i:04d}.jpg")):
+        i += 1
+    return i
+
+
+indice_fichier = prochain_indice_libre(0)
+
 # 2. Ouvrir la webcam
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
@@ -51,9 +64,10 @@ while compteur_images < OBJECTIF:
 
     # --- On ne sauvegarde que si on n'est PAS en pause ---
     if not en_pause and numero_frame % INTERVALLE == 0:
-        chemin = os.path.join(dossier, f"{NOM_CLASSE}_{compteur_images:04d}.jpg")
+        chemin = os.path.join(dossier, f"{NOM_CLASSE}_{indice_fichier:04d}.jpg")
         cv2.imwrite(chemin, frame)
         compteur_images += 1
+        indice_fichier = prochain_indice_libre(indice_fichier + 1)
 
         # --- Pause automatique tous les PAUSE_TOUS_LES images ---
         if compteur_images >= prochain_seuil_pause and compteur_images < OBJECTIF:
