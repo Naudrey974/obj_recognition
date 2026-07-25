@@ -1,0 +1,19 @@
+# Données (volumineuses, régénérables via extraire_frames.py)
+videos/*.mp4
+dataset/*/*.jpg
+dataset/*/*.png
+
+# Modèles entraînés et logs TensorBoard (volumineux, régénérables via train.py)
+models/*.h5
+models/*.keras
+models/saved_model/
+logs/*
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
