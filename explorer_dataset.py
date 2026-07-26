@@ -1,4 +1,6 @@
 import os
+import random
+
 import matplotlib.pyplot as plt
 import cv2
 
@@ -19,7 +21,8 @@ plt.show()
 fig, axes = plt.subplots(len(classes), 5, figsize=(12, 3 * len(classes)), squeeze=False)
 
 for ligne, classe in enumerate(classes):
-    fichiers = sorted(os.listdir(os.path.join(DOSSIER, classe)))[:5]
+    tous_fichiers = os.listdir(os.path.join(DOSSIER, classe))
+    fichiers = random.sample(tous_fichiers, k=min(5, len(tous_fichiers)))
     for col, fichier in enumerate(fichiers):
         image = cv2.imread(os.path.join(DOSSIER, classe, fichier))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # OpenCV lit en BGR !
