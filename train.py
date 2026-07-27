@@ -45,7 +45,7 @@ base_model = tf.keras.applications.MobileNetV2(
     input_shape=(TAILLE, TAILLE, 3), include_top=False, weights="imagenet"
 )
 print(base_model.output_shape) #taille couche de sortie
-print(base_model.count_params()) #taille du reseau complet (une fois dégélée)
+print(base_model.count_params()) #nb total de parametres de la base MobileNetV2
 
 # Phase A : Feature Extraction
 base_model.trainable = False   # On gèle le modèle de base
