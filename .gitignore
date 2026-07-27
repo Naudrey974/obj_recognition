@@ -2,11 +2,11 @@
 dataset/*/*.jpg
 dataset/*/*.png
 
-# Modèles entraînés et logs TensorBoard (volumineux, régénérables via train.py)
-models/*.h5
-models/*.keras
-models/saved_model/
+# Logs TensorBoard (volumineux, régénérables via train.py)
 logs/*
+
+# Modèle final à livrer 
+models/saved_model/
 
 # Python
 __pycache__/
