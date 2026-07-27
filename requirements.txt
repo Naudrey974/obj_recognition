@@ -1,6 +1,0 @@
-tensorflow
-opencv-python
-matplotlib
-numpy
-scikit-learn
-tensorboard
